@@ -1,13 +1,9 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 Load required libraries and set appropriate flags
-```{r}
+
+```r
 library(knitr)
 opts_chunk$set(echo = TRUE, results = 'hold')
 library(data.table)
@@ -15,12 +11,27 @@ library(ggplot2)
 library(Hmisc)
 ```
 
+```
+## Loading required package: grid
+## Loading required package: lattice
+## Loading required package: survival
+## Loading required package: splines
+## Loading required package: Formula
+## 
+## Attaching package: 'Hmisc'
+## 
+## The following objects are masked from 'package:base':
+## 
+##     format.pval, round.POSIXt, trunc.POSIXt, units
+```
+
 
 ### Loading and preprocessing the data
 
 1. Load the data (i.e. read.csv())
 Extract zip file and read file. Set date column to be Date class and make interval column to be factor.
-```{r}
+
+```r
 if (!file.exists("activity.csv")) {
     unzip("activity.zip")
 }
@@ -28,36 +39,59 @@ activity <- read.csv("activity.csv", colClasses=c("numeric", "character", "numer
 ```
 
 2. Process/transform the data (if necessary) into a format suitable for your analysis
-```{r}
+
+```r
 activity$date <- as.Date(activity$date, format = "%Y-%m-%d")
 activity$interval <- as.factor(activity$interval)
 ```
 
 Here is preview of final data in this step.
-```{r}
+
+```r
 str(activity)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: Factor w/ 288 levels "0","5","10","15",..: 1 2 3 4 5 6 7 8 9 10 ...
 ```
 
 ### What is mean total number of steps taken per day?
 
 1. Calculate the total number of steps taken per day
-```{r}
+
+```r
 totalStepsByDate <- aggregate(steps ~ date, data = activity, sum, na.rm = TRUE)
 ```
 
 2. Make a histogram of the total number of steps taken each day
-```{r}
+
+```r
 hist(totalStepsByDate$steps, main = "Total steps by day", xlab = "day", col = "red")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+
 3. Calculate and report the mean and median of the total number of steps taken per day
 Mean of total number of steps by day is:
-```{r}
+
+```r
 mean(totalStepsByDate$steps)
 ```
+
+```
+## [1] 10766.19
+```
 Median of total number of steps by day is:
-```{r}
+
+```r
 median(totalStepsByDate$steps)
+```
+
+```
+## [1] 10765
 ```
 
 ### What is the average daily activity pattern?
@@ -65,52 +99,79 @@ median(totalStepsByDate$steps)
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
 We can calculate the mean steps for each five minute interval, and then put it in a array. Then we draw plot of that.
-```{r}
+
+```r
 stepsByInterval <- tapply(activity$steps, activity$interval, mean, na.rm = TRUE)
 plot(row.names(stepsByInterval), stepsByInterval, type = "l", xlab = "5-min intervals", 
      ylab = "Average across all Days", main = "Average number of steps taken")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-```{r}
+
+```r
 maxInterval <- which.max(stepsByInterval)
 names(maxInterval)
+```
+
+```
+## [1] "835"
 ```
 
 ### Imputing missing values
 
 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-```{r}
+
+```r
 missingValues <- sum(is.na(activity))
 missingValues
+```
+
+```
+## [1] 2304
 ```
 
 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r}
+
+```r
 activityImputed <- activity
 activityImputed$steps <- impute(activity$steps, fun=mean)
 ```
 
 4. Make a histogram of the total number of steps taken each day.
 
-```{r}
+
+```r
 totalStepsByDateImputed <- aggregate(steps ~ date, data = activityImputed, sum)
 hist(totalStepsByDateImputed$steps, main = "Total steps by day (Imputed)", xlab = "day", col = "blue")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png) 
+
 Calculate and report the mean and median total number of steps taken per day.
 Mean (Imputed): 
-```{r}
+
+```r
 mean(totalStepsByDateImputed$steps)
 ```
 
+```
+## [1] 10766.19
+```
+
 Median (Imputed)
-```{r}
+
+```r
 median(totalStepsByDateImputed$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
